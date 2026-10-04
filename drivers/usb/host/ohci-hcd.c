@@ -2111,7 +2111,7 @@ int ohci_register(struct udevice *dev, struct ohci_regs *regs)
 	priv->desc_before_addr = true;
 
 	ohci->regs = regs;
-	ohci->hcca = memalign(256, sizeof(struct ohci_hcca));
+	ohci->hcca = memalign(4096, 4096);
 	if (!ohci->hcca)
 		return -ENOMEM;
 	memset(ohci->hcca, 0, sizeof(struct ohci_hcca));
