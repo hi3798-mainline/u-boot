@@ -1,0 +1,179 @@
+// SPDX-License-Identifier: BSD-3-Clause
+/*
+ * Copyright (C) 2026 Danila Tikhonov <danila@jiaxyga.com>
+ */
+
+#include <dt-bindings/clock/histb-clock.h>
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+
+/ {
+	compatible = "hisilicon,hi3798mv300";
+	interrupt-parent = <&gic>;
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	psci {
+		compatible = "arm,psci-0.2";
+		method = "smc";
+	};
+
+	clocks {
+		xtal_clk: clock-24m {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <24000000>;
+			clock-output-names = "clk24M";
+		};
+
+		/* PL011 UART */
+		clk_75m: clock-75m {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <75000000>;
+			lock-output-names = "clk75M";
+		};
+	};
+
+	cpus {
+		#address-cells = <2>;
+		#size-cells = <0>;
+
+		cpu@0 {
+			compatible = "arm,cortex-a53";
+			device_type = "cpu";
+			reg = <0x0 0x0>;
+			enable-method = "psci";
+		};
+
+		cpu@1 {
+			compatible = "arm,cortex-a53";
+			device_type = "cpu";
+			reg = <0x0 0x1>;
+			enable-method = "psci";
+		};
+
+		cpu@2 {
+			compatible = "arm,cortex-a53";
+			device_type = "cpu";
+			reg = <0x0 0x2>;
+			enable-method = "psci";
+		};
+
+		cpu@3 {
+			compatible = "arm,cortex-a53";
+			device_type = "cpu";
+			reg = <0x0 0x3>;
+			enable-method = "psci";
+		};
+	};
+
+	gic: interrupt-controller@f1001000 {
+		compatible = "arm,gic-400";
+		reg = <0x0 0xf1001000 0x0 0x1000>,  /* GICD */
+		      <0x0 0xf1002000 0x0 0x100>;   /* GICC */
+		#address-cells = <0>;
+		#interrupt-cells = <3>;
+		interrupt-controller;
+	};
+
+	soc: soc {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges = <0x0 0x0 0xf0000000 0x10000000>;
+
+		crg: clock-controller@8a22000 {
+			compatible = "hisilicon,hi3798mv300-crg";
+			reg = <0x08a22000 0x400>;
+			#clock-cells = <1>;
+		};
+
+		rst: reset-controller@8a22000 {
+			compatible = "hisilicon,hi3798cv300-reset",
+				     "hisilicon,hi3798cv200-reset";
+			reg = <0x08a22000 0x400>;
+			#reset-cells = <2>;
+		};
+
+		watchdog0: watchdog@8a2c000 {
+			compatible = "arm,sp805";
+			reg = <0x08a2c000 0x1000>;
+
+			clocks = <&xtal_clk>;
+			clock-names = "apb_pclk";
+		};
+
+		uart0: serial@8b00000 {
+			compatible = "arm,pl011", "arm,primecell";
+			reg = <0x8b00000 0x1000>;
+			interrupts = <GIC_SPI 49 IRQ_TYPE_LEVEL_HIGH>;
+
+			clocks = <&clk_75m>;
+			clock-names = "apb_pclk";
+
+			status = "disabled";
+		};
+
+		sd0: mmc@9820000 {
+			compatible = "snps,dw-mshc";
+			reg = <0x09820000 0x1000>;
+			interrupts = <GIC_SPI 34 IRQ_TYPE_LEVEL_HIGH>;
+
+			clocks = <&crg 0x9c>,
+				 <&crg 0x9c>;
+			clock-names = "ciu", "biu";
+
+			status = "disabled";
+		};
+
+		emmc: mmc@9830000 {
+			compatible = "hisilicon,hi3798mv300-dw-mshc",
+				     "hisilicon,hi3798mv200-dw-mshc";
+			reg = <0x09830000 0x10000>;
+			interrupts = <GIC_SPI 35 IRQ_TYPE_LEVEL_HIGH>;
+
+			clocks = <&crg HISTB_MMC_CIU_CLK>,
+				 <&crg HISTB_MMC_BIU_CLK>;
+			clock-names = "ciu", "biu";
+
+			resets = <&rst 0xa0 4>;
+			reset-names = "reset";
+
+			status = "disabled";
+		};
+
+		ohci: ohci@9880000 {
+			compatible = "generic-ohci";
+			reg = <0x09880000 0x10000>;
+			interrupts = <GIC_SPI 67 IRQ_TYPE_LEVEL_HIGH>;
+
+			clocks = <&crg 0xb8>;
+			clock-names = "clk";
+
+			status = "disabled";
+		};
+
+		ehci: ehci@9890000 {
+			compatible = "generic-ehci";
+			reg = <0x09890000 0x10000>;
+			interrupts = <GIC_SPI 66 IRQ_TYPE_LEVEL_HIGH>;
+
+			clocks = <&crg 0xb8>;
+			clock-names = "clk";
+
+			status = "disabled";
+		};
+	};
+
+	timer {
+		compatible = "arm,armv8-timer";
+		interrupts = <GIC_PPI 13 (GIC_CPU_MASK_SIMPLE(4) |
+			      IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI 14 (GIC_CPU_MASK_SIMPLE(4) |
+			      IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI 11 (GIC_CPU_MASK_SIMPLE(4) |
+			      IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI 10 (GIC_CPU_MASK_SIMPLE(4) |
+			      IRQ_TYPE_LEVEL_LOW)>;
+	};
+};
