@@ -208,6 +208,12 @@ config SPL_CLK_SCMI
 	  by a SCMI agent based on SCMI clock protocol communication
 	  with a SCMI server in SPL.
 
+config CLK_HI3798MV300
+	bool "HiSilicon Hi3798MV300 clock support"
+	depends on ARCH_HISTB
+	help
+	  Minimal clock provider for HiSilicon Hi3798MV300.
+
 config CLK_HSDK
 	bool "Enable cgu clock driver for HSDK boards"
 	depends on CLK && TARGET_HSDK
