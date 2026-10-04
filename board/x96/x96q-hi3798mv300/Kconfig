@@ -1,0 +1,11 @@
+config SYS_BOARD
+	string
+	default "x96q-hi3798mv300" if TARGET_X96Q_HI3798MV300
+
+config SYS_VENDOR
+	string
+	default "x96" if TARGET_X96Q_HI3798MV300
+
+config SYS_SOC
+	string
+	default "hi3798mv300" if TARGET_X96Q_HI3798MV300

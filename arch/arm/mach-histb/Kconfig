@@ -1,13 +1,18 @@
-if ARCH_HISTB
-
 choice
 	prompt "Select a HiSTB SoC"
+	depends on ARCH_HISTB
 
 config ARCH_HI3798MV2X
 	bool "Hi3798M V2XX series SoC"
 	select ARM64
 	help
 	  Support for Hi3798MV2XX series SoCs.
+
+config ARCH_HI3798MV3X
+	bool "Hi3798M V3XX series SoC"
+	select ARM64
+	help
+	  Support for Hi3798MV3XX series SoCs.
 
 endchoice
 
@@ -34,6 +39,19 @@ endchoice
 
 endif
 
-source "board/skyworth/hc2910-2aghd05/Kconfig"
+if ARCH_HI3798MV3X
+
+choice
+	prompt "Select a Hi3798M V3XX based board"
+
+config TARGET_X96Q_HI3798MV300
+	bool "X96Q Hi3798MV300"
+	help
+	  Support for X96Q TV box based on HiSilicon Hi3798MV300.
+
+endchoice
 
 endif
+
+source "board/skyworth/hc2910-2aghd05/Kconfig"
+source "board/x96/x96q-hi3798mv300/Kconfig"
